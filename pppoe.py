@@ -1,8 +1,13 @@
 import time
 import requests
 import os
-
+from get_router_ip import get_router_ip
 requests.certs.verify = False
+
+router_ip = get_router_ip()
+if not router_ip:
+    print("Could not determine router IP address.")
+    exit(1)
 
 def check_ISP():
     response = requests.get(f"https://ipinfo.io/json",proxies={"http": None, "https": None},timeout=5)
@@ -10,9 +15,11 @@ def check_ISP():
     print(f"ISP: {data.get('org')}")
     return data.get("org")
 
-
+#The payload below is based on TP-Link,
+#it may not works on other brands of routers.
+#If so, you need to replace the payload.
 def login_router(password) -> str:
-    url = "http://192.168.1.1"
+    url = f"http://{router_ip}"
     payload = {
         "method": "do",
         "login": {
@@ -25,7 +32,7 @@ def login_router(password) -> str:
     return json_response.get("stok")
 
 def set_credentials(username, password, stok):
-    url = f"http://192.168.1.1/stok={stok}/ds"
+    url = f"http://{router_ip}/stok={stok}/ds"
     payload = {
         "protocol": {
             "wan": {"wan_type": "pppoe"},
@@ -38,7 +45,7 @@ def set_credentials(username, password, stok):
     print(response.text)
 
 def pppoe(stok,action):
-    url = f"http://192.168.1.1/stok={stok}/ds"
+    url = f"http://{router_ip}/stok={stok}/ds"
     payload = {
         "network": {
             "change_wan_status": {
