@@ -1,12 +1,15 @@
 import time
 import requests
 import os
+from dotenv import load_dotenv
 from get_router_ip import get_router_ip
+from tplink_security_encode import tplink_security_encode
 
+load_dotenv()
 requests.certs.verify = False
-panel_password = os.getenv("PANEL_PASSWORD")
-pppoe_username = os.getenv("PPPOE_USERNAME")
-pppoe_password = os.getenv("PPPOE_PASSWORD")
+PLANE_PASSWORD = os.getenv("PANEL_PASSWORD")
+PPPOE_USERNAME = os.getenv("PPPOE_USERNAME")
+PPPOE_PASSWORD = os.getenv("PPPOE_PASSWORD")
 
 router_ip = get_router_ip()
 if not router_ip:
@@ -35,9 +38,8 @@ def login_router(password) -> str:
     print(json_response)
     return json_response.get("stok")
 
-stok = login_router(panel_password)
 
-def set_credentials(username, password):
+def set_credentials(username, password, stok):
     url = f"http://{router_ip}/stok={stok}/ds"
     payload = {
         "protocol": {
@@ -50,7 +52,7 @@ def set_credentials(username, password):
     response = requests.post(url, json=payload)
     print(response.text)
 
-def pppoe(action):
+def pppoe(action, stok):
     url = f"http://{router_ip}/stok={stok}/ds"
     payload = {
         "network": {
@@ -66,14 +68,14 @@ def pppoe(action):
 
 
 if __name__ == "__main__":
-    
     #AS9808 is China Mobile, so we only run this code if the ISP is not China Mobile
+    login_router(tplink_security_encode(PLANE_PASSWORD))
     ISP = check_ISP()
     while not ISP.startswith("AS9808"):
         print(f"Current ISP: {ISP}")
-        stok = login_router(panel_password)
-        set_credentials(pppoe_username, pppoe_password)
-        pppoe("connect")
+        stok = login_router(tplink_security_encode(PLANE_PASSWORD))
+        set_credentials(PPPOE_USERNAME, PPPOE_PASSWORD, stok)
+        pppoe("connect", stok)
         # Wait for a time to make sure DHCP has assgined a new IP address
         time.sleep(30)
-        pppoe("disconnect")
+        pppoe("disconnect", stok)
