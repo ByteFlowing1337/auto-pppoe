@@ -13,9 +13,9 @@
     * `ROUTER_PASSWORD`: Your router's web management password.
     * `PPPOE_USER`: Your ISP-provided username.
     * `PPPOE_PASS`: Your ISP-provided password.
-    You can use commands:
+    * You can use commands:
     ```bash
-    echo PANEL_PASSWORD="your_secure_password" > .env
+    echo PANEL_PASSWORD="your_secure_password" >> .env
     echo PPPOE_USERNAME="your_username" >> .env
     echo PPPOE_PASSWORD="your_pppoe_password" >> .env
     ```
