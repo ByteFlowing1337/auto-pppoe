@@ -69,7 +69,6 @@ def pppoe(action, stok):
 
 if __name__ == "__main__":
     #AS9808 is China Mobile, so we only run this code if the ISP is not China Mobile
-    login_router(tplink_security_encode(PLANE_PASSWORD))
     ISP = check_ISP()
     while not ISP.startswith("AS9808"):
         print(f"Current ISP: {ISP}")
