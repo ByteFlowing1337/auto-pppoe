@@ -13,8 +13,8 @@
     * `ROUTER_PASSWORD`: Your router's web management password.
     * `PPPOE_USER`: Your ISP-provided username.
     * `PPPOE_PASS`: Your ISP-provided password.
-    * `ASN` : Your desired ASN that you want change to.
-    * You can use commands:
+    * `ASN` : Your desired ASN that you want change to. <br>
+    You can use commands:
     ```bash
     echo PANEL_PASSWORD="your_secure_password" >> .env
     echo PPPOE_USERNAME="your_username" >> .env
@@ -25,9 +25,9 @@
     ```bash
     python pppoe.py
     ```
-    arguments:
-    -f, --force: Force to make a DHCP request regardless ASN.
-    -a, --asn: Provide a ASN in form of CLI argument instead environment variable.
+    arguments:<br>
+    -f, --force: Force to make a DHCP request regardless ASN.<br>
+    -a, --asn: Provide a ASN in form of CLI argument instead environment variable.<br>
 
 ---
 
