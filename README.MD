@@ -31,14 +31,13 @@ echo "PPPOE_USER='your_username'" >> .env
 echo "PPPOE_PASS='your_pppoe_password'" >> .env
 echo "ASN='your_desired_asn'" >> .env
 ```
-[!IMPORTANT]
+[IMPORTANT] <br>
 Keep your .env file secure! Ensure it is added to your .gitignore to prevent accidentally sharing your credentials on public repositories.
 
 #### 2.  **Run the Script** Execute the tool from your terminal:
-    ```bash
     python pppoe.py
-    ```
-    arguments:<br>
+
+    arguments:
     -f, --force: Force to make a DHCP request regardless ASN.<br>
     -a, --asn: Provide a ASN in form of CLI argument instead environment variable.<br>
 
