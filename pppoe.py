@@ -2,7 +2,11 @@ import time
 import requests
 import os
 from get_router_ip import get_router_ip
+
 requests.certs.verify = False
+panel_password = os.getenv("PANEL_PASSWORD")
+pppoe_username = os.getenv("PPPOE_USERNAME")
+pppoe_password = os.getenv("PPPOE_PASSWORD")
 
 router_ip = get_router_ip()
 if not router_ip:
@@ -31,7 +35,9 @@ def login_router(password) -> str:
     print(json_response)
     return json_response.get("stok")
 
-def set_credentials(username, password, stok):
+stok = login_router(panel_password)
+
+def set_credentials(username, password):
     url = f"http://{router_ip}/stok={stok}/ds"
     payload = {
         "protocol": {
@@ -44,7 +50,7 @@ def set_credentials(username, password, stok):
     response = requests.post(url, json=payload)
     print(response.text)
 
-def pppoe(stok,action):
+def pppoe(action):
     url = f"http://{router_ip}/stok={stok}/ds"
     payload = {
         "network": {
@@ -65,12 +71,9 @@ if __name__ == "__main__":
     ISP = check_ISP()
     while not ISP.startswith("AS9808"):
         print(f"Current ISP: {ISP}")
-        panel_password = os.getenv("PANEL_PASSWORD")
-        pppoe_username = os.getenv("PPPOE_USERNAME")
-        pppoe_password = os.getenv("PPPOE_PASSWORD")
         stok = login_router(panel_password)
-        set_credentials(pppoe_username, pppoe_password, stok)
-        pppoe(stok,"connect")
+        set_credentials(pppoe_username, pppoe_password)
+        pppoe("connect")
         # Wait for a time to make sure DHCP has assgined a new IP address
         time.sleep(30)
-        pppoe(stok,"disconnect")
+        pppoe("disconnect")
