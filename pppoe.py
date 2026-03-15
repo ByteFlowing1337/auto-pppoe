@@ -1,20 +1,20 @@
 from sys import argv
-from utils import ASN, check_ISP, make_pppoe_reconnection
+from utils import ASN, check_isp, make_pppoe_reconnection
 
 def main(FORCE=False, ASN=ASN):
-    ISP = check_ISP()
+    isp = check_isp()
     #No providing ASN, no --force, exit.
     if ASN is None and not FORCE:
         print("No ASN provided, exiting.")
         print("Try running the script with -f or --force flag or provide an ASN with the -a or --asn flag.")
         exit(1)
 
-    while not ISP.startswith(f"{ASN}"):
-        print(f"Current ISP: {ISP}")
+    while not isp.startswith(f"{ASN}"):
+        print(f"Current ISP: {isp}")
         make_pppoe_reconnection()
-        ISP = check_ISP()
-        print(f"ISP after reconnection: {ISP}")
-        if ISP.startswith(f"{ASN}"):
+        isp = check_isp()
+        print(f"ISP after reconnection: {isp}")
+        if isp.startswith(f"{ASN}"):
             print("Successfully switched to the desired ASN.")
         if FORCE:
             print("Forced reconnection completed.")

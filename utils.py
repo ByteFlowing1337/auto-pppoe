@@ -1,6 +1,7 @@
 import os
-from dotenv import load_dotenv
 import requests
+
+from dotenv import load_dotenv
 from tplink_security_encode import tplink_security_encode
 from get_router_ip import get_router_ip
 from time import sleep
@@ -17,8 +18,8 @@ PPPOE_USERNAME = os.getenv("PPPOE_USERNAME")
 PPPOE_PASSWORD = os.getenv("PPPOE_PASSWORD")
 ASN: str | None = os.getenv("ASN") if os.getenv("ASN") else None
 
-def check_ISP():
-    response = requests.get(f"https://ipinfo.io/json",proxies={"http": None, "https": None},timeout=5)
+def check_isp():
+    response = requests.get(f"https://ipinfo.io/json",proxies={"http": "", "https": ""},timeout=5)
     data = response.json()
     print(f"ISP: {data.get('org')}")
     return data.get("org")
@@ -85,6 +86,6 @@ def make_pppoe_reconnection():
     stok = login_router(tplink_security_encode(PLANE_PASSWORD))
     set_credentials(PPPOE_USERNAME, PPPOE_PASSWORD, stok)
     pppoe("disconnect", stok)
-    # Wait for a time to make sure DHCP has assgined a new IP address
+    # Wait for a time to make sure DHCP has assigned a new IP address
     sleep(30)
     pppoe("connect", stok)
