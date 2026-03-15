@@ -37,7 +37,12 @@ def login_router(password) -> str:
     }
     response = requests.post(url, json=payload)
     json_response = response.json()
-    print(json_response)
+    if '0' in response.text:
+        print("Login router successful.")
+    else:
+        print("Failed to login router.")
+        print(response.text)
+        exit(1)
     return json_response.get("stok")
 
 
@@ -52,7 +57,11 @@ def set_credentials(username, password, stok):
     }
     
     response = requests.post(url, json=payload)
-    print(response.text)
+    if '0' in response.text:
+        print("PPPoE credentials set successfully.")
+    else:
+        print("Failed to set PPPoE credentials.")
+        print(response.text)
 
 def pppoe(action, stok):
     url = f"http://{router_ip}/stok={stok}/ds"
@@ -66,7 +75,11 @@ def pppoe(action, stok):
             "method": "do"
     }
     response = requests.post(url, json=payload)
-    print(response.text)
+    if '0' in response.text:
+        print(f"PPPoE {action} successful.")
+    else:
+        print(f"Failed to {action} PPPoE.")
+        print(response.text)
 
 def make_pppoe_reconnection():
     stok = login_router(tplink_security_encode(PLANE_PASSWORD))
