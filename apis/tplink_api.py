@@ -1,10 +1,9 @@
-import os
 import requests
 import encode
 
-from dotenv import load_dotenv
 from apis.get_gateway import get_gateway_ip
 from time import sleep
+from typing import Literal
 
 from config.config import PLANE_PASSWORD, PPPOE_USERNAME, PPPOE_PASSWORD
 
@@ -44,32 +43,41 @@ class TPLinkAPI:
         if not self.router_ip:
             print("Could not determine router IP address.")
             exit(1)
+        self.session = requests.Session()
         self.password = encode.tplink_security_encode(PLANE_PASSWORD)
         self.username = PPPOE_USERNAME
         self.pppoe_password = PPPOE_PASSWORD
         self.stok = self.__login_router()
-
-    def __login_router(self) -> str:
+    
+    def __post(self,payload) -> dict:
         url = f"http://{self.router_ip}"
+        response = self.session.post(url, json=payload)
+        return response.json()
+
+    def __request(self, payload) -> dict:
+        url = f"http://{self.router_ip}/stok={self.stok}/ds"
+        response = self.session.post(url, json=payload)
+        return response.json()
+
+    def __login_router(self) -> str|None:
         payload = {
             "method": "do",
             "login": {
                 "password": self.password
             }
         }
-        response = requests.post(url, json=payload)
-        json_response = response.json()
-        if json_response.get("error_code") == 0 and json_response.get("stok") != None:
+        response = self.__post(payload)
+        if response.get("error_code") == 0 and response.get("stok") != None:
             print("Login successful.")
-            return json_response.get("stok")
+            return response.get("stok")
         else:
             print("Login failed.")
-            print(response.text)
-            exit(1) 
+            print(response)
+            exit(1)
+        return None
 
 
-    def set_credentials(self):
-        url = f"http://{self.router_ip}/stok={self.stok}/ds"
+    def set_credentials(self) -> None:
         payload = {
             "protocol": {
                 "wan": {"wan_type": "pppoe"},
@@ -78,17 +86,14 @@ class TPLinkAPI:
             "method": "set"
         }
         
-        response = requests.post(url, json=payload)
-        json_response = response.json()
-        if json_response.get("error_code") == 0:
+        response = self.__request(payload)
+        if response.get("error_code") == 0:
             print("PPPoE credentials set successfully.")
         else:
             print("Failed to set PPPoE credentials.")
-            print(response.text)
-            exit(1)
-            
-    def pppoe(self, action):
-        url = f"http://{self.router_ip}/stok={self.stok}/ds"
+            print(response)
+
+    def pppoe(self, action: Literal["connect", "disconnect"]) -> None:
         payload = {
             "network": {
                 "change_wan_status": {
@@ -98,16 +103,14 @@ class TPLinkAPI:
             },
                 "method": "do"
         }
-        response = requests.post(url, json=payload)
-        json_response = response.json()
-        if json_response.get("error_code") == 0:
+        response = self.__request(payload)
+        if response.get("error_code") == 0:
             print(f"PPPoE {action} successful.")
         else:
             print(f"Failed to {action} PPPoE.")
-            print(response.text)
-            exit(1)
+            print(response)
 
-    def make_pppoe_reconnection(self):
+    def make_pppoe_reconnection(self) -> None:
         self.set_credentials()
         self.pppoe("disconnect")
         # Wait for a time to make sure DHCP has assigned a new IP address
