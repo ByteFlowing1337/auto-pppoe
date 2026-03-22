@@ -18,8 +18,8 @@ def main(FORCE=False, ASN=ASN):
         print("Already connected to the desired ASN, no reconnection needed.")
         exit(0)
 
+    print(f"Current ISP: {isp}")
     while not isp.startswith(f"{ASN}"):
-        print(f"Current ISP: {isp}")
         router.make_pppoe_reconnection()
         isp = apis.check_isp()
         print(f"ISP after reconnection: {isp}")
