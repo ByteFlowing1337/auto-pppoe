@@ -1,8 +1,14 @@
 from sys import argv
-import apis
-
+from apis.routers.tplink.get_devices import tplink_get_devices
 
 if __name__ == "__main__":
     if len(argv) == 1:
-        apis.tplink_get_devices()
+        tplink_get_devices()
+    else:
+        match argv[1]:
+            case "--tplink":
+                tplink_get_devices()
+            case _:
+                print(f"Unknown argument: {argv[1]}")
+                print("Usage: python get_devices.py [--tplink]")
         
