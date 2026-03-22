@@ -4,6 +4,7 @@ import encode
 from apis.get_gateway import get_gateway_ip
 from time import sleep
 from typing import Literal
+from urllib.parse import unquote
 
 from config.config import PLANE_PASSWORD, PPPOE_USERNAME, PPPOE_PASSWORD
 
@@ -116,3 +117,25 @@ class TPLinkAPI:
         # Wait for a time to make sure DHCP has assigned a new IP address
         sleep(30)
         self.pppoe("connect")
+    
+    def get_connected_devices(self) -> list:
+        payload = {"hosts_info":{"table":"host_info","name":"cap_host_num"},"network":{"name":"iface_mac"},"hyfi":{"table":["connected_ext"]},"method":"get"}
+        response = self.__request(payload)
+        if response.get("error_code") != 0:
+            return []
+        
+        raw_hosts = response.get("hosts_info", {}).get("host_info", [])
+        devices: list[dict] = []
+
+        for item in raw_hosts:
+            host = next(iter(item.values()), {})  # host_info_0 / host_info_1 -> {...}
+            devices.append({
+            "hostname": unquote(host.get("hostname", "")) or "(unknown)",
+            "ip": host.get("ip", "-"),
+            "mac": host.get("mac", "-"),
+            "type": "wireless" if host.get("type") == "1" else "wired",
+            "is_current": host.get("is_cur_host") == "1",
+            "up_kbps": int(host.get("up_speed", "0")),
+            "down_kbps": int(host.get("down_speed", "0")),
+        })
+        return devices
