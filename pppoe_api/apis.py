@@ -38,7 +38,7 @@ def login_router(password) -> str:
     }
     response = requests.post(url, json=payload)
     json_response = response.json()
-    if '0' in response.text:
+    if json_response.get("error_code") == 0:
         print("Login router successful.")
     else:
         print("Failed to login router.")
@@ -58,7 +58,8 @@ def set_credentials(username, password, stok):
     }
     
     response = requests.post(url, json=payload)
-    if '0' in response.text:
+    json_response = response.json()
+    if json_response.get("error_code") == 0:
         print("PPPoE credentials set successfully.")
     else:
         print("Failed to set PPPoE credentials.")
@@ -77,7 +78,8 @@ def pppoe(action, stok):
             "method": "do"
     }
     response = requests.post(url, json=payload)
-    if '0' in response.text:
+    json_response = response.json()
+    if json_response.get("error_code") == 0:
         print(f"PPPoE {action} successful.")
     else:
         print(f"Failed to {action} PPPoE.")
