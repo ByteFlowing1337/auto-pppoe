@@ -11,4 +11,4 @@ if __name__ == "__main__":
             case _:
                 print(f"Unknown argument: {argv[1]}")
                 print("Usage: python get_devices.py [--tplink]")
-        
+                exit(1)
