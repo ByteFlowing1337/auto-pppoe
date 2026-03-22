@@ -1,20 +1,15 @@
 import os
 import requests
+import encode
 
 from dotenv import load_dotenv
-from encode.tplink_security_encode import tplink_security_encode
 from apis.get_gateway import get_gateway_ip
 from time import sleep
 
+from config.config import PLANE_PASSWORD, PPPOE_USERNAME, PPPOE_PASSWORD
 
 
 
-load_dotenv()
-
-PLANE_PASSWORD = os.getenv("PANEL_PASSWORD")
-PPPOE_USERNAME = os.getenv("PPPOE_USERNAME")
-PPPOE_PASSWORD = os.getenv("PPPOE_PASSWORD")
-ASN: str | None = os.getenv("ASN") if os.getenv("ASN") else None
 
 
 
@@ -49,7 +44,7 @@ class TPLinkAPI:
         if not self.router_ip:
             print("Could not determine router IP address.")
             exit(1)
-        self.password = tplink_security_encode(PLANE_PASSWORD)
+        self.password = encode.tplink_security_encode(PLANE_PASSWORD)
         self.username = PPPOE_USERNAME
         self.pppoe_password = PPPOE_PASSWORD
         self.stok = self.__login_router()
