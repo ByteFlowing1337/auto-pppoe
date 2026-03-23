@@ -24,10 +24,10 @@ uv sync
 python -m venv .venv
 
 # Windows (PowerShell)
-.venv\Scripts\Activate.ps1
+. .\.venv\Scripts\Activate.ps1
 
 # Linux/macOS
-# source .venv/bin/activate
+source .venv/bin/activate
 
 pip install requests "python-dotenv>=1,<2"
 ```
