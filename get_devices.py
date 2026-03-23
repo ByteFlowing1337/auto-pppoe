@@ -10,7 +10,10 @@ def main() -> None:
                 tplink_get_devices()
             case _:
                 print(f"Unknown argument: {argv[1]}")
-                print("Usage: python get_devices.py [--tplink]")
+                if argv[0].startswith("python"):
+                    print("Usage: python get_devices.py [--tplink]")
+                else:
+                    print("Usage: get_devices [--tplink]")
                 exit(1)
 
 
