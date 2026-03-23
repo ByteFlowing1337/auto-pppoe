@@ -1,0 +1,9 @@
+[project]
+name = "AutoDialer"
+version = "0.1.0"
+description = "AutoDialer is a automation script designed to interact with routers using APIs."
+readme = "README.MD"
+dependencies = [
+    "python-dotenv>=1,<2",
+    "requests<3",
+]
