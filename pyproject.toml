@@ -1,0 +1,25 @@
+[project]
+name = "AutoDialer"
+version = "0.1.0"
+description = "AutoDialer is an automation script designed to interact with routers using APIs."
+readme = "README.MD"
+requires-python = ">=3.13"
+dependencies = [
+    "python-dotenv>=1,<2",
+    "requests<3",
+]
+
+[project.scripts]
+autodialer = "pppoe:main"
+autodialer-devices = "get_devices:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["pppoe", "get_devices"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["apis*", "config*", "encode*"]

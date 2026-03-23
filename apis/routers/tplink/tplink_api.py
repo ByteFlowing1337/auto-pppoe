@@ -6,7 +6,7 @@ from time import sleep
 from typing import Literal
 from urllib.parse import unquote
 
-from config.config import PLANE_PASSWORD, PPPOE_USERNAME, PPPOE_PASSWORD
+from config.config import PANEL_PASSWORD, PPPOE_USERNAME, PPPOE_PASSWORD
 
 
 
@@ -45,7 +45,7 @@ class TPLinkAPI:
             print("Could not determine router IP address.")
             exit(1)
         self.session = requests.Session()
-        self.password = encode.tplink_security_encode(PLANE_PASSWORD)
+        self.password = encode.tplink_security_encode(PANEL_PASSWORD)
         self.username = PPPOE_USERNAME
         self.pppoe_password = PPPOE_PASSWORD
         self.stok = self.__login_router()

@@ -1,7 +1,8 @@
+from pathlib import Path
 from sys import argv
 from apis.routers.tplink.get_devices import tplink_get_devices
 
-if __name__ == "__main__":
+def main() -> None:
     if len(argv) == 1:
         tplink_get_devices()
     else:
@@ -10,5 +11,12 @@ if __name__ == "__main__":
                 tplink_get_devices()
             case _:
                 print(f"Unknown argument: {argv[1]}")
-                print("Usage: python get_devices.py [--tplink]")
+                if Path(argv[0]).suffix.lower() == ".py":
+                    print("Usage: python get_devices.py [--tplink]")
+                else:
+                    print("Usage: autodialer-devices [--tplink]")
                 exit(1)
+
+
+if __name__ == "__main__":
+    main()
