@@ -20,7 +20,7 @@ def is_target_asn(isp: str | None, asn: str | None) -> bool:
     tokens = isp.split()
     if not tokens:
         return False
-    first_token = tokens[0].upper() 
+    first_token = tokens[0].upper()
 
     return first_token == normalized_asn
 
