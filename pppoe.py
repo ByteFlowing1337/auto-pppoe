@@ -12,13 +12,15 @@ def is_target_asn(isp: str | None, asn: str | None) -> bool:
     raw_asn = asn.strip().upper()
     if raw_asn.startswith("AS"):
         raw_asn = raw_asn[2:].strip()
-
     if not raw_asn:
         return False
 
     normalized_asn = f"AS{raw_asn}"
 
-    first_token = isp.split(maxsplit=1)[0].strip().upper() 
+    tokens = isp.split()
+    if not tokens:
+        return False
+    first_token = tokens[0].upper() 
 
     return first_token == normalized_asn
 
