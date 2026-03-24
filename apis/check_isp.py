@@ -47,12 +47,16 @@ def check_isp_with_retries(retries: int = 3, delay: int = 5) -> str | None:
     if isp is not None:
         return isp
 
-    print("Failed to check ISP, retrying...")
 
-    if retries <= 0 or delay < 0:
-        print("Invalid retries or delay parameters. Retries and delay must be non-negative.")
+    if retries < 0 or delay <= 0:
+        print("Invalid retries or delay parameters. Retries and delay should be positive integers.")
         return None
 
+    if retries == 0:
+        print("No retries configured, exiting.")
+        return None
+
+    print("Failed to check ISP, retrying...")
     for _ in range(retries):
         time.sleep(delay)
         isp = check_isp()
