@@ -19,8 +19,8 @@ def run_reconnection(force: bool = False, asn: str | None = ASN) -> None:
 
     if force:
         router.make_pppoe_reconnection()
-        isp = apis.check_isp_with_retries() 
-        if isp is not None: 
+        isp = apis.check_isp_with_retries()
+        if isp is not None:
             print(f"ISP after forced reconnection: {isp}")
         print("Forced reconnection completed.")
         return
