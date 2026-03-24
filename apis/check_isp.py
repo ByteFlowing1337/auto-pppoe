@@ -4,8 +4,14 @@ import time
 def check_isp(verbose: bool = False) -> str | None:
     """Return the current ISP org string, or ``None`` on failure.
 
-    Network/request and JSON parsing errors are handled internally (printed)
-    and do not propagate to callers.
+    Network/request and JSON parsing errors are handled internally: a
+    diagnostic message is printed and the error does not propagate to
+    callers.
+
+    Args:
+        verbose: If True, print ``"ISP: <org>"`` on successful lookup.
+            This flag does not affect error reporting; error messages are
+            always printed on failure.
     """
     try:
         response = requests.get(f"https://ipinfo.io/json",
