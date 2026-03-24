@@ -18,7 +18,7 @@ def is_target_asn(isp: str | None, asn: str | None) -> bool:
 
     normalized_asn = f"AS{raw_asn}"
 
-    first_token = isp.split(maxsplit=1)[0].strip().upper() 
+    first_token = isp.split(maxsplit=1)[0].strip().upper()
 
     return first_token == normalized_asn
 
