@@ -43,12 +43,15 @@ def run_reconnection(force: bool = False, asn: str | None = ASN) -> None:
 
     isp = apis.check_isp_with_retries()
 
+    if isp is None:
+        exit(1)
+
+    print(f"Current ISP: {isp}")
+
     if is_target_asn(isp, asn):
-        print(f"Current ISP: {isp}")
         print("Already connected to the desired ASN, no reconnection needed.")
         exit(0)
 
-    print(f"Current ISP: {isp}")
     max_attempts: int = 5
     tries: int = 0
     while True:
