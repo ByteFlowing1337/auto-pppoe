@@ -25,7 +25,7 @@ def is_target_asn(isp: str | None, asn: str | None) -> bool:
     return first_token == normalized_asn
 
 def run_reconnection(force: bool = False, asn: str | None = ASN) -> None:
-    #No providing ASN, no --force, exit.
+    # No ASN provided and no --force flag; exiting.
     if asn is None and not force:
         print("No ASN provided, exiting.")
         print("Try running the script with -f or --force flag or provide an ASN with the -a or --asn flag.")
