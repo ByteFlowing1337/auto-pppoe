@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from .apis.check_isp import check_isp, check_isp_with_retries
 from .apis.get_gateway import (
