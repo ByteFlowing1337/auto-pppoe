@@ -40,10 +40,10 @@ class TPLinkAPI:
     stok: str | None = None
 
     def __init__(self):
-        self.router_ip = get_gateway_ip()
-        if not self.router_ip:
+        if get_gateway_ip is None:
             print("Could not determine router IP address.")
             exit(1)
+        self.router_ip = get_gateway_ip()
         self.session = requests.Session()
         self.password = encode.tplink_security_encode(PANEL_PASSWORD)
         self.username = PPPOE_USERNAME
@@ -68,7 +68,7 @@ class TPLinkAPI:
             }
         }
         response = self.__post(payload)
-        if response.get("error_code") == 0 and response.get("stok") != None:
+        if response.get("error_code") == 0 and response.get("stok") is not None:
             print("Login successful.")
             return response.get("stok")
         else:

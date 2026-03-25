@@ -34,19 +34,19 @@ def tplink_security_encode(password):
     for m in range(e):
         # Default fallback is 187 (the 'k' and 'l' initialization in your JS)
         k = 187
-        l = 187
+        key_code = 187
         
         if m >= f:
             # Index past password length: use key char for 'l'
-            l = ord(key[m])
+            key_code = ord(key[m])
         elif m >= g:
             # Index past key length: use password char for 'k'
             k = ord(password[m])
         else:
             # Within both lengths: use both
             k = ord(password[m])
-            l = ord(key[m])
+            key_code = ord(key[m])
             
-        d += dictionary[(k ^ l) % h]
+        d += dictionary[(k ^ key_code) % h]
         
     return d

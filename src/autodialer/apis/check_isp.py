@@ -14,7 +14,7 @@ def check_isp(verbose: bool = False) -> str | None:
             always printed on failure.
     """
     try:
-        response = requests.get(f"https://ipinfo.io/json",
+        response = requests.get("https://ipinfo.io/json",
                                 proxies={"http": "", "https": ""}, timeout=4)
         response.raise_for_status()
         data = response.json()
