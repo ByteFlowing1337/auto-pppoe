@@ -5,7 +5,7 @@ requires-python = ">=3.13"
 [[package]]
 name = "autodialer"
 version = "0.2.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "python-dotenv" },
     { name = "requests" },
