@@ -19,9 +19,12 @@ def check_isp(verbose: bool = False) -> str | None:
         response.raise_for_status()
         data = response.json()
         org = data.get("org")
+        if not isinstance(org, str):
+            print("Unexpected ISP response format: missing or invalid 'org' field.")
+            return None
         if verbose:
             print(f"ISP: {org}")
-        return org if isinstance(org, str) else None
+        return org
 
     except requests.Timeout:
         print("Timeout while checking ISP. Check your internet connection.")
