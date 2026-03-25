@@ -1,9 +1,11 @@
 [project]
 name = "AutoDialer"
-version = "0.2.0"
+authors = [{name = "Byte Flow", email = "fakeshadow1337@gmail.com"}]
 description = "AutoDialer is an automation script designed to interact with routers using APIs."
-readme = "README.MD"
+readme = "README.md"
 requires-python = ">=3.13"
+license = {file = "LICENSE"}
+dynamic = ["version"]
 dependencies = [
     "python-dotenv>=1,<2",
     "requests<3",
@@ -19,6 +21,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "autodialer.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
