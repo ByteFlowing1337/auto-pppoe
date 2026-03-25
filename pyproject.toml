@@ -10,16 +10,16 @@ dependencies = [
 ]
 
 [project.scripts]
-autodialer = "pppoe:main"
-autodialer-devices = "get_devices:main"
+autodialer = "autodialer.pppoe:main"
+autodialer-devices = "autodialer.get_devices:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["pppoe", "get_devices"]
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["apis*", "config*", "encode*"]
+where = ["src"]
+include = ["autodialer*"]

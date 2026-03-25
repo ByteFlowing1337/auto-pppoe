@@ -1,4 +1,4 @@
-from apis import TPLinkAPI
+from autodialer.apis import TPLinkAPI
 
 def print_devices_table(devices: list) -> None:
     if not devices:

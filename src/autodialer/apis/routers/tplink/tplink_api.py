@@ -1,12 +1,12 @@
 import requests
-import encode
+from autodialer import encode
 
-from apis.get_gateway import get_gateway_ip
+from autodialer.apis.get_gateway import get_gateway_ip
 from time import sleep
 from typing import Literal
 from urllib.parse import unquote
 
-from config.config import PANEL_PASSWORD, PPPOE_USERNAME, PPPOE_PASSWORD
+from autodialer.config.config import PANEL_PASSWORD, PPPOE_USERNAME, PPPOE_PASSWORD
 
 
 

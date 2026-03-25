@@ -1,8 +1,7 @@
 from pathlib import Path
 from sys import argv
-from config.config import ASN
-
-import apis
+from autodialer.config.config import ASN
+from autodialer.apis import TPLinkAPI, check_isp_with_retries
 
 
 def is_target_asn(isp: str | None, asn: str | None) -> bool:
@@ -31,17 +30,17 @@ def run_reconnection(force: bool = False, asn: str | None = ASN) -> None:
         print("Try running the script with -f or --force flag or provide an ASN with the -a or --asn flag.")
         exit(1)
 
-    router = apis.TPLinkAPI()
+    router = TPLinkAPI()
 
     if force:
         router.make_pppoe_reconnection()
-        isp = apis.check_isp_with_retries()
+        isp = check_isp_with_retries()
         if isp is not None:
             print(f"ISP after forced reconnection: {isp}")
         print("Forced reconnection completed.")
         return
 
-    isp = apis.check_isp_with_retries()
+    isp = check_isp_with_retries()
 
     if isp is None:
         exit(1)
@@ -56,7 +55,7 @@ def run_reconnection(force: bool = False, asn: str | None = ASN) -> None:
     tries: int = 0
     while True:
         router.make_pppoe_reconnection()
-        isp = apis.check_isp_with_retries()
+        isp = check_isp_with_retries()
         if isp is None:
             exit(1)
         print(f"ISP after reconnection: {isp}")
