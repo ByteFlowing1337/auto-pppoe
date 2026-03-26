@@ -4,6 +4,7 @@ from autodialer.config.config import ASN
 from sys import argv
 from pathlib import Path
 
+
 def _get_wan_proto(router: TPLinkAPI) -> str | None:
     status = router.tplink_get_wan_status()
     wan_status = status.get("network", {}).get("wan_status", {})
@@ -68,6 +69,7 @@ def run_reconnection(force: bool = False, asn: str | None = ASN) -> None:
 
     print("Reached maximum reconnection attempts without switching to the desired ASN.")
     exit(1)
+
 
 def main(proto: str | None) -> None:
     if len(argv) == 1:
