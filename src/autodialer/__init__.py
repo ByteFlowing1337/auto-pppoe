@@ -7,7 +7,7 @@ from .apis.get_gateway import (
     get_gateway_ip_on_windows,
 )
 from .apis.routers.tplink.tplink_api import TPLinkAPI
-from .pppoe import is_target_asn
+from .apis.is_target_asn import is_target_asn
 
 __all__ = [
     "check_isp",
