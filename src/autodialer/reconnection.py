@@ -1,6 +1,7 @@
 from autodialer.apis import TPLinkAPI, check_isp_with_retries
 from autodialer.apis.utils.is_target_asn import is_target_asn
 from autodialer.config.config import ASN
+from autodialer.apis.utils.get_vendor_api import get_vendor_api
 from sys import argv
 from pathlib import Path
 
@@ -41,15 +42,6 @@ class Reconnection:
             print(f"Forced {proto} reconnection completed.")
             return
 
-        isp = check_isp_with_retries()
-        if isp is None:
-            exit(1)
-
-        print(f"Current ISP: {isp}")
-        if is_target_asn(isp, asn):
-            print("Already connected to the desired ASN, no reconnection needed.")
-            exit(0)
-
         max_attempts = 5
         for attempt in range(1, max_attempts + 1):
             if not self._apply_reconnection(proto):
@@ -77,8 +69,7 @@ class Reconnection:
                 self.run_reconnection(force=False, asn=argv[2])
 
 
-
-def parse_arguments() -> None:
+def parse_arguments(asn: str | None) -> None:
     if len(argv) == 1:
         print("No ASN provided, exiting.")
         print("Try running with -f/--force or provide an ASN with -a/--asn <ASN>.")
@@ -91,6 +82,14 @@ def parse_arguments() -> None:
             if len(argv) < 3:
                 print("Please provide an ASN after the -a or --asn flag.")
                 exit(1)
+            isp = check_isp_with_retries()
+            if isp is None:
+                exit(1)
+
+            print(f"Current ISP: {isp}")
+            if is_target_asn(isp, asn):
+                print("Already connected to the desired ASN, no reconnection needed.")
+                exit(0)
             return
         case _:
             print(f"Unknown argument: {argv[1]}")
@@ -102,8 +101,14 @@ def parse_arguments() -> None:
 
 
 def main():
-    parse_arguments()  # Parse arguments before initializing the router
-    router = TPLinkAPI()
+    parse_arguments(
+        asn=argv[2] if len(argv) > 2 else ASN
+    )  # Parse arguments before initializing the router
+    vendor = get_vendor_api()
+    if vendor is None:
+        print("Unable to determine router vendor. Exiting.")
+        exit(1)
+    router = vendor()
     reconnection = Reconnection(router)
     reconnection.main(reconnection._get_wan_proto())
 
