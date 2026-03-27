@@ -27,7 +27,7 @@ dependencies = [
 Homepage = "https://github.com/ByteFlowing1337/AutoDialer"
 
 [project.scripts]
-autodialer = "autodialer.pppoe:main"
+autodialer = "autodialer.reconnection:main"
 autodialer-devices = "autodialer.get_devices:main"
 
 [build-system]
