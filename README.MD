@@ -53,8 +53,8 @@ Create a `.env` file in your working directory:
 | Variable | Description |
 | :--- | :--- |
 | `PANEL_PASSWORD` | Router panel password |
-| `PPPOE_USERNAME` | ISP PPPoE username |
-| `PPPOE_PASSWORD` | ISP PPPoE password |
+| `PPPOE_USERNAME` | ISP PPPoE username (required for PPPoE lines) |
+| `PPPOE_PASSWORD` | ISP PPPoE password (required for PPPoE lines) |
 | `ASN` | Target ASN (optional unless not using `--force`) |
 
 Example:
@@ -79,6 +79,11 @@ autodialer-devices --tplink
 Arguments:
 - `-f`, `--force`: force reconnection even if ASN is already matched.
 - `-a`, `--asn`: target ASN (for example `AS9929` or `9929`).
+
+Behavior:
+- AutoDialer detects current WAN protocol and applies matching reconnection action.
+- PPPoE uses disconnect/connect flow with configured PPPoE credentials.
+- DHCP uses DHCP renew flow and shares the same ASN/check/retry control logic.
 
 ## Notes
 - Current API payloads are primarily tailored for TP-Link router firmware behavior.

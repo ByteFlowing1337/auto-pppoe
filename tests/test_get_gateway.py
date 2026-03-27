@@ -10,7 +10,7 @@ from autodialer import (
 
 
 class TestGetGatewayIp(unittest.TestCase):
-    @patch("autodialer.apis.get_gateway.subprocess.run")
+    @patch("autodialer.apis.utils.get_gateway.subprocess.run")
     def test_windows_gateway_parsed(self, mock_run: Any):
         mock_run.return_value = Mock(
             stdout="Ethernet adapter:\n   Default Gateway . . . . . . . . . : 192.168.0.1\n"
@@ -20,7 +20,7 @@ class TestGetGatewayIp(unittest.TestCase):
 
         self.assertEqual(result, "192.168.0.1")
 
-    @patch("autodialer.apis.get_gateway.subprocess.run")
+    @patch("autodialer.apis.utils.get_gateway.subprocess.run")
     def test_linux_gateway_parsed(self, mock_run: Any):
         mock_run.return_value = Mock(
             stdout="default via 10.0.0.1 dev eth0 proto dhcp\n"
@@ -30,7 +30,7 @@ class TestGetGatewayIp(unittest.TestCase):
 
         self.assertEqual(result, "10.0.0.1")
 
-    @patch("autodialer.apis.get_gateway.subprocess.run")
+    @patch("autodialer.apis.utils.get_gateway.subprocess.run")
     def test_unix_gateway_parsed(self, mock_run: Any):
         mock_run.return_value = Mock(stdout="default 172.16.0.1 UGSc 46 0 en0\n")
 
@@ -38,7 +38,7 @@ class TestGetGatewayIp(unittest.TestCase):
 
         self.assertEqual(result, "172.16.0.1")
 
-    @patch("autodialer.apis.get_gateway.subprocess.run")
+    @patch("autodialer.apis.utils.get_gateway.subprocess.run")
     def test_no_gateway_returns_none(self, mock_run: Any):
         mock_run.return_value = Mock(stdout="")
 

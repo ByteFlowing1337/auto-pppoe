@@ -7,7 +7,7 @@ import requests
 
 from autodialer import check_isp, check_isp_with_retries
 
-check_isp_module = importlib.import_module("autodialer.apis.check_isp")
+check_isp_module = importlib.import_module("autodialer.apis.utils.check_isp")
 
 
 class TestCheckIsp(unittest.TestCase):

@@ -1,7 +1,7 @@
 import requests
 from autodialer import encode
 
-from autodialer.apis.get_gateway import get_gateway_ip
+from autodialer.apis.utils.get_gateway import get_gateway_ip
 from time import sleep
 from typing import Literal
 from urllib.parse import unquote
@@ -44,21 +44,17 @@ class TPLinkAPI:
             print("Could not determine router IP address.")
             exit(1)
 
-        if PANEL_PASSWORD is None or PPPOE_USERNAME is None or PPPOE_PASSWORD is None:
-            print(
-                "Missing required environment variables: PANEL_PASSWORD, PPPOE_USERNAME, or PPPOE_PASSWORD"
-            )
+        if PANEL_PASSWORD is None:
+            print("Missing required environment variable: PANEL_PASSWORD")
             exit(1)
 
         panel_password: str = PANEL_PASSWORD
-        pppoe_username: str = PPPOE_USERNAME
-        pppoe_password: str = PPPOE_PASSWORD
 
         self.router_ip = router_ip
         self.session = requests.Session()
         self.password = encode.tplink_security_encode(panel_password)
-        self.username = pppoe_username
-        self.pppoe_password = pppoe_password
+        self.username = PPPOE_USERNAME or ""
+        self.pppoe_password = PPPOE_PASSWORD or ""
         self.stok = self.__login_router()
 
     def __post(self, payload) -> dict:
@@ -83,7 +79,13 @@ class TPLinkAPI:
             exit(1)
         return None
 
-    def set_credentials(self) -> None:
+    def set_credentials(self) -> bool:
+        if not self.username or not self.pppoe_password:
+            print(
+                "Missing PPPoE credentials. Set PPPOE_USERNAME and PPPOE_PASSWORD for PPPoE reconnection."
+            )
+            return False
+
         payload = {
             "protocol": {
                 "wan": {"wan_type": "pppoe"},
@@ -95,28 +97,57 @@ class TPLinkAPI:
         response = self.__request(payload)
         if response.get("error_code") == 0:
             print("PPPoE credentials set successfully.")
+            return True
         else:
             print("Failed to set PPPoE credentials.")
             print(response)
+            return False
 
-    def pppoe(self, action: Literal["connect", "disconnect"]) -> None:
+    def tplink_change_wan_status_request(
+        self, action: Literal["connect", "disconnect", "renew"], method: str, proto: str
+    ) -> bool:
         payload = {
-            "network": {"change_wan_status": {"proto": "pppoe", "operate": action}},
-            "method": "do",
+            "network": {"change_wan_status": {"proto": proto, "operate": action}},
+            "method": method,
         }
         response = self.__request(payload)
         if response.get("error_code") == 0:
-            print(f"PPPoE {action} successful.")
+            print(f"{proto} {action} successful.")
+            return True
         else:
-            print(f"Failed to {action} PPPoE.")
+            print(f"Failed to {action} {proto}.")
             print(response)
+            return False
 
-    def make_pppoe_reconnection(self) -> None:
-        self.set_credentials()
-        self.pppoe("disconnect")
+    def tplink_get_wan_status(self) -> dict:
+        payload = {
+            "network": {"name": ["wan_status", "wanv6_status"]},
+            "protocol": {"name": ["dhcp", "ipv6_info"]},
+            "method": "get",
+        }
+        response = self.__request(payload)
+        if response.get("error_code") == 0:
+            return response
+        else:
+            print("Failed to get WAN status.")
+            print(response)
+            return {}
+
+    def make_pppoe_reconnection(self) -> bool:
+        if not self.set_credentials():
+            return False
+
+        if not self.tplink_change_wan_status_request(
+            action="disconnect", method="do", proto="pppoe"
+        ):
+            return False
         # Wait for a time to make sure DHCP has assigned a new IP address
         sleep(30)
-        self.pppoe("connect")
+        if self.tplink_change_wan_status_request(
+            action="connect", method="do", proto="pppoe"
+        ):
+            return True
+        return False
 
     def get_connected_devices(self) -> list:
         payload = {
@@ -148,3 +179,8 @@ class TPLinkAPI:
                 }
             )
         return devices
+
+    def dhcp_renew(self) -> bool:
+        return self.tplink_change_wan_status_request(
+            action="renew", method="do", proto="dhcp"
+        )
