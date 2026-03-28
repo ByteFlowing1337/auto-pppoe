@@ -2,7 +2,7 @@
 name = "AutoDialer"
 authors = [{name = "Byte Flow", email = "fakeshadow1337@gmail.com"}]
 description = "AutoDialer is an automation script designed to interact with routers using APIs."
-readme = "README.md"
+readme = "README.MD"
 requires-python = ">=3.10"
 license = "GPL-3.0-only"
 dynamic = ["version"]
