@@ -1,7 +1,7 @@
 import requests
 from autodialer import encode
 
-from autodialer.apis.utils.get_gateway import get_gateway_ip
+from autodialer.apis.utils.get_gateway import format_ip_for_url_host, get_gateway_ip
 from time import sleep
 from typing import Literal
 from urllib.parse import unquote
@@ -58,12 +58,14 @@ class TPLinkAPI:
         self.stok = self.__login_router()
 
     def __post(self, payload) -> dict:
-        url = f"http://{self.router_ip}"
+        router_host = format_ip_for_url_host(self.router_ip)
+        url = f"http://{router_host}"
         response = self.session.post(url, json=payload)
         return response.json()
 
     def __request(self, payload) -> dict:
-        url = f"http://{self.router_ip}/stok={self.stok}/ds"
+        router_host = format_ip_for_url_host(self.router_ip)
+        url = f"http://{router_host}/stok={self.stok}/ds"
         response = self.session.post(url, json=payload)
         return response.json()
 

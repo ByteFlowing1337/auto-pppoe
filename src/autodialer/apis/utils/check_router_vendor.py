@@ -1,5 +1,5 @@
 import requests
-from .get_gateway import get_gateway_ip
+from .get_gateway import format_ip_for_url_host, get_gateway_ip
 
 VENDOR_SIGNATURES: dict[str, tuple[str, ...]] = {
     "TP-Link": ("tp-link", "tplink", "tl-", "archer", "deco", "tplinkwifi.net"),
@@ -44,7 +44,8 @@ def check_router_vendor() -> str | None:
         return None
 
     try:
-        response = requests.get(f"http://{gateway}", timeout=5)
+        gateway_host = format_ip_for_url_host(gateway)
+        response = requests.get(f"http://{gateway_host}", timeout=5)
         response.raise_for_status()
 
         body = (response.text or "")[:20000].casefold()
