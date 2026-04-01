@@ -33,6 +33,10 @@ class TPLinkAPI:
         stok: The session token obtained after logging into the router, used for authenticated requests.
     """
 
+    SUPPORTED_VENDORS = (
+        "TP-Link",
+    )
+
     router_ip: str
     password: str
     username: str

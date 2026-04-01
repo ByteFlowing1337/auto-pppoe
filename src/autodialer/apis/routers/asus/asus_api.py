@@ -22,6 +22,8 @@ MAC_ADDRESS_PATTERN = re.compile(r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 class AsusAPI:
     """Interact with ASUSWRT routers using the web API."""
 
+    SUPPORTED_VENDORS = ("ASUS", "ASUS AiMesh")
+
     router_ip: str
     panel_username: str
     panel_password: str
