@@ -1,4 +1,6 @@
 import base64
+import json
+import re
 from typing import Any
 from urllib.parse import quote
 
@@ -10,6 +12,11 @@ from autodialer.config.config import PANEL_PASSWORD, PANEL_USERNAME
 USER_AGENT = "AutoDialer"
 REQUEST_TIMEOUT = 5
 WAN_STATUS_HOOK = "get_wan_unit();nvram_get(wan0_proto);nvram_get(wan1_proto);"
+UPDATE_CLIENTS_PATTERN = re.compile(
+    r"originData = (.*)networkmap_fullscan = ",
+    re.DOTALL,
+)
+MAC_ADDRESS_PATTERN = re.compile(r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 
 
 class AsusAPI:
@@ -105,6 +112,144 @@ class AsusAPI:
             print(f"Error connecting to router: {last_error}")
 
         return False, None
+
+    def _post_text_request(
+        self,
+        endpoint: str,
+        raw_payload: str,
+        form_payload: dict[str, Any] | None = None,
+        base_url: str | None = None,
+        verify_ssl: bool | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> tuple[bool, str | None]:
+        url = f"{base_url or self.base_url}/{endpoint}"
+        ssl_verify = self.verify_ssl if verify_ssl is None else verify_ssl
+        payload_variants: list[Any] = [quote(raw_payload)]
+        if form_payload is not None:
+            payload_variants.append(form_payload)
+
+        last_error: requests.RequestException | None = None
+
+        for payload in payload_variants:
+            try:
+                response = self.session.post(
+                    url,
+                    data=payload,
+                    headers=headers,
+                    timeout=REQUEST_TIMEOUT,
+                    verify=ssl_verify,
+                )
+                response.raise_for_status()
+            except requests.RequestException as exc:
+                last_error = exc
+                continue
+
+            return True, response.text
+
+        if last_error is not None:
+            print(f"Error connecting to router: {last_error}")
+
+        return False, None
+
+    @staticmethod
+    def _read_dict_json(content: str) -> dict[str, Any]:
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError:
+            return {}
+
+        return data if isinstance(data, dict) else {}
+
+    @classmethod
+    def _read_update_clients_data(cls, content: str) -> dict[str, Any]:
+        match = UPDATE_CLIENTS_PATTERN.search(content.replace("\n", ""))
+        if not match:
+            return {}
+
+        payload = re.sub(
+            r"\b(fromNetworkmapd|nmpClient)\b\s*:",
+            r'"\1":',
+            match.group(1),
+        )
+        return cls._read_dict_json(payload)
+
+    @staticmethod
+    def _read_client_map(value: Any) -> dict[str, Any]:
+        if isinstance(value, list) and value and isinstance(value[0], dict):
+            return value[0]
+        if isinstance(value, dict):
+            return value
+        return {}
+
+    @classmethod
+    def _is_mac_address(cls, value: Any) -> bool:
+        return (
+            isinstance(value, str) and MAC_ADDRESS_PATTERN.fullmatch(value) is not None
+        )
+
+    @staticmethod
+    def _merge_client_metadata(
+        client: dict[str, Any],
+        fallback: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        if not fallback:
+            return client
+
+        merged = client.copy()
+        for key in (
+            "name",
+            "nickName",
+            "vendor",
+            "vendorclass",
+            "type",
+            "defaultType",
+        ):
+            if merged.get(key) in (None, "") and fallback.get(key) not in (
+                None,
+                "",
+            ):
+                merged[key] = fallback[key]
+
+        return merged
+
+    @staticmethod
+    def _read_device_name(client: dict[str, Any]) -> str:
+        for key in ("nickName", "name", "vendor"):
+            value = client.get(key)
+            if isinstance(value, str):
+                value = value.strip()
+                if value:
+                    return value
+
+        return "(unknown)"
+
+    @staticmethod
+    def _read_speed(value: Any) -> int:
+        if isinstance(value, (int, float)):
+            return max(0, int(round(value)))
+
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return 0
+            try:
+                return max(0, int(round(float(value))))
+            except ValueError:
+                return 0
+
+        return 0
+
+    @staticmethod
+    def _is_online(client: dict[str, Any]) -> bool:
+        return str(client.get("isOnline", client.get("online", "0"))).strip() == "1"
+
+    @staticmethod
+    def _read_connection_type(client: dict[str, Any]) -> str:
+        value = client.get(
+            "isWL",
+            client.get("wireless", client.get("is_wireless", "0")),
+        )
+        return "wireless" if str(value).strip() not in ("", "0", "None") else "wired"
 
     def _login_router(self) -> tuple[str, bool, str]:
         auth = f"{self.panel_username}:{self.panel_password}".encode("ascii")
@@ -249,3 +394,56 @@ class AsusAPI:
 
         print("Failed to renew dhcp.")
         return False
+
+    def get_connected_devices(self) -> list[dict[str, Any]]:
+        ok, content = self._post_text_request(
+            endpoint="update_clients.asp",
+            raw_payload="",
+            form_payload={},
+            headers=self._auth_headers(),
+        )
+        if not ok or content is None:
+            print("Failed to get ASUS connected devices.")
+            return []
+
+        data = self._read_update_clients_data(content)
+        if not data:
+            print("Failed to parse ASUS connected devices.")
+            return []
+
+        current_clients = self._read_client_map(data.get("fromNetworkmapd"))
+        historical_clients = self._read_client_map(data.get("nmpClient"))
+
+        devices: list[dict[str, Any]] = []
+        for mac, client in current_clients.items():
+            if not self._is_mac_address(mac) or not isinstance(client, dict):
+                continue
+
+            fallback = historical_clients.get(mac)
+            merged_client = self._merge_client_metadata(
+                client,
+                fallback if isinstance(fallback, dict) else None,
+            )
+            if not self._is_online(merged_client):
+                continue
+
+            devices.append(
+                {
+                    "hostname": self._read_device_name(merged_client),
+                    "ip": merged_client.get("ip", "-") or "-",
+                    "mac": mac,
+                    "type": self._read_connection_type(merged_client),
+                    "is_current": str(merged_client.get("isLogin", "0")).strip() == "1",
+                    "up_kbps": self._read_speed(merged_client.get("curTx")),
+                    "down_kbps": self._read_speed(merged_client.get("curRx")),
+                }
+            )
+
+        devices.sort(
+            key=lambda device: (
+                not device["is_current"],
+                device["hostname"].lower(),
+                device["mac"],
+            )
+        )
+        return devices
