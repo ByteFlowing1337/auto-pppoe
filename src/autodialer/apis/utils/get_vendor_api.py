@@ -3,7 +3,7 @@ from importlib import import_module
 from inspect import getmembers, isclass
 from pathlib import Path
 
-from autodialer.apis.utils.check_router_vendor import check_router_vendor
+from autodialer.apis.utils.check_vendor import check_router_vendor
 
 
 def _read_supported_vendors(candidate: type) -> tuple[str, ...]:
