@@ -32,6 +32,8 @@ class TPLinkAPI:
         stok: The session token obtained after logging into the router, used for authenticated requests.
     """
 
+    SUPPORTED_VENDORS = ("TP-Link",)
+
     router_ip: str
     password: str
     username: str
@@ -84,7 +86,7 @@ class TPLinkAPI:
     def set_credentials(self) -> bool:
         if not self.username or not self.pppoe_password:
             print(
-                "Missing PPPoE credentials. Set PPPOE_USERNAME and PPPOE_PASSWORD for PPPoE reconnection."
+                "Missing PPPoE credentials override. Will reuse the credentials already saved on the router."
             )
             return False
 
@@ -135,8 +137,20 @@ class TPLinkAPI:
             print(response)
             return {}
 
+    def get_wan_proto(self) -> str | None:
+        status = self.tplink_get_wan_status()
+        wan_status = status.get("network", {}).get("wan_status", {})
+        proto = wan_status.get("proto")
+        return proto if isinstance(proto, str) else None
+
     def make_pppoe_reconnection(self) -> bool:
-        if not self.set_credentials():
+
+        if not self.username or not self.pppoe_password:
+            print(
+                "PPPoE credentials not provided. Attempting reconnection with existing credentials on the router."
+            )
+
+        if self.username and self.pppoe_password and not self.set_credentials():
             return False
 
         if not self.tplink_change_wan_status_request(

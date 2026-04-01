@@ -1,7 +1,7 @@
 import importlib
 import unittest
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 reconnection_module = importlib.import_module("autodialer.reconnection")
@@ -25,6 +25,25 @@ class TestParseArguments(unittest.TestCase):
                 reconnection_module.parse_arguments("AS9929")
 
         self.assertEqual(context.exception.code, 0)
+
+
+class TestReconnection(unittest.TestCase):
+    def test_get_wan_proto_uses_router_contract(self):
+        router = Mock()
+        router.get_wan_proto.return_value = "dhcp"
+
+        reconnection = reconnection_module.Reconnection(router)
+
+        self.assertEqual(reconnection._get_wan_proto(), "dhcp")
+
+    def test_apply_reconnection_calls_pppoe_method(self):
+        router = Mock()
+        router.make_pppoe_reconnection.return_value = True
+
+        reconnection = reconnection_module.Reconnection(router)
+
+        self.assertTrue(reconnection._apply_reconnection("pppoe"))
+        router.make_pppoe_reconnection.assert_called_once_with()
 
 
 if __name__ == "__main__":

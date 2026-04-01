@@ -52,13 +52,15 @@ Create a `.env` file in your working directory:
 
 | Variable | Description |
 | :--- | :--- |
+| `PANEL_USERNAME` | Router panel username (defaults to `admin`) |
 | `PANEL_PASSWORD` | Router panel password |
-| `PPPOE_USERNAME` | ISP PPPoE username (required for PPPoE lines) |
-| `PPPOE_PASSWORD` | ISP PPPoE password (required for PPPoE lines) |
+| `PPPOE_USERNAME` | ISP PPPoE username (optional; used when you want to overwrite the router's saved PPPoE config before reconnecting) |
+| `PPPOE_PASSWORD` | ISP PPPoE password (optional; used when you want to overwrite the router's saved PPPoE config before reconnecting) |
 | `ASN` | Target ASN (optional unless not using `--force`) |
 
 Example:
 ```bash
+PANEL_USERNAME='admin'
 PANEL_PASSWORD='your_router_panel_password'
 PPPOE_USERNAME='your_pppoe_username'
 PPPOE_PASSWORD='your_pppoe_password'
@@ -82,11 +84,13 @@ Arguments:
 
 Behavior:
 - AutoDialer detects current WAN protocol and applies matching reconnection action.
-- PPPoE uses disconnect/connect flow with configured PPPoE credentials.
+- PPPoE uses disconnect/connect flow and reuses the router's saved credentials by default.
+- If `PPPOE_USERNAME` and `PPPOE_PASSWORD` are set, AutoDialer updates the router's PPPoE config before reconnecting.
 - DHCP uses DHCP renew flow and shares the same ASN/check/retry control logic.
+- ASUSWRT routers use panel authentication plus WAN restart through the ASUS web API.
 
 ## Notes
-- Current API payloads are primarily tailored for TP-Link router firmware behavior.
+- TP-Link and ASUS routers are supported by default.
 - Keep `.env` private and never commit credentials.
 
 ---
