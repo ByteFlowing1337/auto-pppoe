@@ -7,6 +7,7 @@ from autodialer.apis.routers.base_api import RouterAPI
 
 logger = logging.getLogger(__name__)
 
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if len(argv) == 1:
