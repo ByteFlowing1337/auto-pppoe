@@ -275,7 +275,6 @@ class AsusAPI:
 
             token = data.get("asus_token")
             if isinstance(token, str) and token:
-                print("Login successful.")
                 return base_url, verify_ssl, token
 
         print("Login failed.")
@@ -383,7 +382,6 @@ class AsusAPI:
 
     def make_pppoe_reconnection(self) -> bool:
         if self._restart_wan():
-            print("pppoe reconnection successful.")
             return True
 
         print("Failed to reconnect pppoe.")
@@ -391,7 +389,6 @@ class AsusAPI:
 
     def dhcp_renew(self) -> bool:
         if self._restart_wan():
-            print("dhcp renew successful.")
             return True
 
         print("Failed to renew dhcp.")

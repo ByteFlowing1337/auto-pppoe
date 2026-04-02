@@ -75,7 +75,6 @@ class TPLinkAPI:
         payload = {"method": "do", "login": {"password": self.password}}
         response = self.__post(payload)
         if response.get("error_code") == 0 and response.get("stok") is not None:
-            print("Login successful.")
             return response.get("stok")
         else:
             print("Login failed.")
@@ -100,7 +99,6 @@ class TPLinkAPI:
 
         response = self.__request(payload)
         if response.get("error_code") == 0:
-            print("PPPoE credentials set successfully.")
             return True
         else:
             print("Failed to set PPPoE credentials.")
@@ -116,7 +114,6 @@ class TPLinkAPI:
         }
         response = self.__request(payload)
         if response.get("error_code") == 0:
-            print(f"{proto} {action} successful.")
             return True
         else:
             print(f"Failed to {action} {proto}.")
@@ -144,11 +141,6 @@ class TPLinkAPI:
         return proto if isinstance(proto, str) else None
 
     def make_pppoe_reconnection(self) -> bool:
-
-        if not self.username or not self.pppoe_password:
-            print(
-                "PPPoE credentials not provided. Attempting reconnection with existing credentials on the router."
-            )
 
         if self.username and self.pppoe_password and not self.set_credentials():
             return False

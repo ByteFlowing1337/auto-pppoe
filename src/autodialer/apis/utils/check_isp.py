@@ -60,10 +60,8 @@ def check_isp_with_retries(retries: int = 3, delay: int = 5) -> str | None:
         return None
 
     if retries == 0:
-        print("No retries configured; not retrying.")
         return None
 
-    print("Failed to check ISP, retrying...")
     for _ in range(retries):
         time.sleep(delay)
         isp = check_isp()
