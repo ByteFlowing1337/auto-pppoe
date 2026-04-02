@@ -1,18 +1,12 @@
-import logging
-
-
-logger = logging.getLogger(__name__)
-
-
 def print_devices_table(devices: list) -> None:
     if not devices:
-        logger.info("No devices connected.")
+        print("No devices connected.")
         return
     header = f"{'HOSTNAME':25} {'IP':15} {'MAC':18} {'TYPE':9} {'UP':>6} {'DOWN':>6} {'ME':>3}"
-    logger.info(header)
-    logger.info("-" * len(header))
+    print(header)
+    print("-" * len(header))
     for d in devices:
-        logger.info(
+        print(
             f"{d['hostname'][:25]:25} "
             f"{d['ip'][:15]:15} "
             f"{d['mac'][:18]:18} "

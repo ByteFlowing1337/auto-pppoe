@@ -66,6 +66,7 @@ def check_isp_with_retries(retries: int = 3, delay: int = 5) -> str | None:
         return None
 
     if retries == 0:
+        logger.warning("ISP check failed. No retries left.")
         return None
 
     for _ in range(retries):
