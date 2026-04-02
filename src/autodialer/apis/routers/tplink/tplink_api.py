@@ -1,5 +1,5 @@
-import requests
 import logging
+import requests
 from autodialer import encode
 
 from autodialer.apis.utils.get_gateway import format_ip_for_url_host, get_gateway_ip
