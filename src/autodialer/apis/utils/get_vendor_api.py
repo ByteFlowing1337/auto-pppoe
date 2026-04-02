@@ -1,9 +1,13 @@
+import logging
 from functools import lru_cache
 from importlib import import_module
 from inspect import getmembers, isclass
 from pathlib import Path
 
 from autodialer.apis.utils.check_vendor import check_router_vendor
+
+
+logger = logging.getLogger(__name__)
 
 
 def _read_supported_vendors(candidate: type) -> tuple[str, ...]:
@@ -66,6 +70,6 @@ def get_vendor_api() -> type | None:
 
     api_class = _get_vendor_api_registry().get(vendor.casefold())
     if api_class is None:
-        print(f"No API implementation for vendor: {vendor}")
+        logger.error("No API implementation for vendor: %s", vendor)
 
     return api_class

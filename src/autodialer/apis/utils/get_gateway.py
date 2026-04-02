@@ -1,10 +1,14 @@
 import ipaddress
+import logging
 import platform
 import socket
 import struct
 import subprocess
 from collections.abc import Callable, Iterable
 from urllib.parse import quote
+
+
+logger = logging.getLogger(__name__)
 
 
 def _is_ip_address(value: str) -> bool:
@@ -187,8 +191,9 @@ else:
     get_gateway_ip = _get_gateway_ip_unsupported
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     gateway_ip = get_gateway_ip()
     if gateway_ip:
-        print(f"Default Gateway IP: {gateway_ip}")
+        logger.info("Default Gateway IP: %s", gateway_ip)
     else:
-        print("Could not determine the default gateway IP address.")
+        logger.error("Could not determine the default gateway IP address.")

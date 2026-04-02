@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check-fix
+        name: ruff check --fix
+        entry: ruff check --fix
+        language: system
+        types: [python]
+        stages: [pre-commit]
+
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format
+        language: system
+        types: [python]
+        stages: [pre-commit]
+
+      - id: ruff-check-push
+        name: ruff check (pre-push)
+        entry: ruff check .
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: ruff-format-check-push
+        name: ruff format --check (pre-push)
+        entry: ruff format --check .
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

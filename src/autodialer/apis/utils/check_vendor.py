@@ -1,5 +1,10 @@
+import logging
+
 import requests
 from .get_gateway import format_ip_for_url_host, get_gateway_ip
+
+
+logger = logging.getLogger(__name__)
 
 VENDOR_SIGNATURES: dict[str, tuple[str, ...]] = {
     "TP-Link": ("tp-link", "tplink", "tl-", "archer", "deco", "tplinkwifi.net"),
@@ -40,7 +45,7 @@ VENDOR_SIGNATURES: dict[str, tuple[str, ...]] = {
 def check_router_vendor() -> str | None:
     gateway = get_gateway_ip()
     if gateway is None:
-        print("Unable to determine router IP address.")
+        logger.error("Unable to determine router IP address.")
         return None
 
     try:
@@ -57,8 +62,8 @@ def check_router_vendor() -> str | None:
             if any(marker in fingerprint for marker in markers):
                 return vendor
 
-        print("Unknown router vendor.")
+        logger.error("Unknown router vendor.")
         return None
     except requests.RequestException as e:
-        print(f"Error connecting to router: {e}")
+        logger.error("Error connecting to router: %s", e)
         return None

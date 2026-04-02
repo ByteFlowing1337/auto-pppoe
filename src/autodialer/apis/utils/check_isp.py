@@ -1,18 +1,22 @@
+import logging
 import requests
 import time
+
+
+logger = logging.getLogger(__name__)
 
 
 def check_isp(verbose: bool = False) -> str | None:
     """Return the current ISP org string, or ``None`` on failure.
 
     Network/request and JSON parsing errors are handled internally: a
-    diagnostic message is printed and the error does not propagate to
+    diagnostic message is logged and the error does not propagate to
     callers.
 
     Args:
-        verbose: If True, print ``"ISP: <org>"`` on successful lookup.
+        verbose: If True, log ``"ISP: <org>"`` on successful lookup.
             This flag does not affect error reporting; error messages are
-            always printed on failure.
+            always logged on failure.
     """
     try:
         response = requests.get(
@@ -22,20 +26,22 @@ def check_isp(verbose: bool = False) -> str | None:
         data = response.json()
         org = data.get("org")
         if not isinstance(org, str):
-            print("Unexpected ISP response format: missing or invalid 'org' field.")
+            logger.error(
+                "Unexpected ISP response format: missing or invalid 'org' field."
+            )
             return None
         if verbose:
-            print(f"ISP: {org}")
+            logger.info("ISP: %s", org)
         return org
 
     except requests.Timeout:
-        print("Timeout while checking ISP. Check your internet connection.")
+        logger.error("Timeout while checking ISP. Check your internet connection.")
         return None
     except requests.RequestException as e:
-        print(f"Error checking ISP: {e}")
+        logger.error("Error checking ISP: %s", e)
         return None
     except ValueError:
-        print("Error parsing ISP response.")
+        logger.error("Error parsing ISP response.")
         return None
 
 
@@ -54,21 +60,20 @@ def check_isp_with_retries(retries: int = 3, delay: int = 5) -> str | None:
         return isp
 
     if retries < 0 or delay <= 0:
-        print(
+        logger.error(
             "Invalid retries or delay parameters. Retries must be non-negative and delay must be a positive integer."
         )
         return None
 
     if retries == 0:
-        print("No retries configured; not retrying.")
+        logger.warning("ISP check failed. No retries left.")
         return None
 
-    print("Failed to check ISP, retrying...")
     for _ in range(retries):
         time.sleep(delay)
         isp = check_isp()
         if isp is not None:
             return isp
 
-    print("Failed to verify ISP after retries. Check your internet connection.")
+    logger.error("Failed to verify ISP after retries. Check your internet connection.")
     return None

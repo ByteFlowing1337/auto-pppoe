@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import re
 from typing import Any
 from urllib.parse import quote
@@ -19,6 +20,9 @@ UPDATE_CLIENTS_PATTERN = re.compile(
 MAC_ADDRESS_PATTERN = re.compile(r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 
 
+logger = logging.getLogger(__name__)
+
+
 class AsusAPI:
     """Interact with ASUSWRT routers using the web API."""
 
@@ -34,11 +38,11 @@ class AsusAPI:
     def __init__(self):
         router_ip = get_gateway_ip()
         if router_ip is None:
-            print("Could not determine router IP address.")
+            logger.error("Could not determine router IP address.")
             exit(1)
 
         if PANEL_PASSWORD is None:
-            print("Missing required environment variable: PANEL_PASSWORD")
+            logger.error("Missing required environment variable: PANEL_PASSWORD")
             exit(1)
 
         self.router_ip = router_ip
@@ -111,7 +115,7 @@ class AsusAPI:
             return True, data
 
         if last_error is not None:
-            print(f"Error connecting to router: {last_error}")
+            logger.error("Error connecting to router: %s", last_error)
 
         return False, None
 
@@ -149,7 +153,7 @@ class AsusAPI:
             return True, response.text
 
         if last_error is not None:
-            print(f"Error connecting to router: {last_error}")
+            logger.error("Error connecting to router: %s", last_error)
 
         return False, None
 
@@ -275,10 +279,9 @@ class AsusAPI:
 
             token = data.get("asus_token")
             if isinstance(token, str) and token:
-                print("Login successful.")
                 return base_url, verify_ssl, token
 
-        print("Login failed.")
+        logger.error("Login failed.")
         exit(1)
 
     def _auth_headers(self) -> dict[str, str]:
@@ -296,7 +299,7 @@ class AsusAPI:
             headers=self._auth_headers(),
         )
         if not ok or not data:
-            print("Failed to get ASUS WAN status.")
+            logger.error("Failed to get ASUS WAN status.")
             return {}
 
         return data
@@ -347,7 +350,7 @@ class AsusAPI:
 
         error_status = data.get("error_status")
         if error_status not in (None, "", 0, "0", False):
-            print(f"ASUS service error: {error_status}")
+            logger.error("ASUS service error: %s", error_status)
             return False
 
         run_service = data.get("run_service")
@@ -359,8 +362,10 @@ class AsusAPI:
             accepted_services.add("restart_wan")
 
         if run_service not in accepted_services:
-            print(
-                f"Unexpected ASUS service response: expected {service}, got {run_service}."
+            logger.error(
+                "Unexpected ASUS service response: expected %s, got %s.",
+                service,
+                run_service,
             )
             return False
 
@@ -383,18 +388,16 @@ class AsusAPI:
 
     def make_pppoe_reconnection(self) -> bool:
         if self._restart_wan():
-            print("pppoe reconnection successful.")
             return True
 
-        print("Failed to reconnect pppoe.")
+        logger.error("Failed to reconnect pppoe.")
         return False
 
     def dhcp_renew(self) -> bool:
         if self._restart_wan():
-            print("dhcp renew successful.")
             return True
 
-        print("Failed to renew dhcp.")
+        logger.error("Failed to renew dhcp.")
         return False
 
     def get_connected_devices(self) -> list[dict[str, Any]]:
@@ -405,12 +408,12 @@ class AsusAPI:
             headers=self._auth_headers(),
         )
         if not ok or content is None:
-            print("Failed to get ASUS connected devices.")
+            logger.error("Failed to get ASUS connected devices.")
             return []
 
         data = self._read_update_clients_data(content)
         if not data:
-            print("Failed to parse ASUS connected devices.")
+            logger.error("Failed to parse ASUS connected devices.")
             return []
 
         current_clients = self._read_client_map(data.get("fromNetworkmapd"))
