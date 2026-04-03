@@ -9,29 +9,10 @@ AutoDialer is a cross-platform Python CLI package for router APIs, designed to r
 
 ## Installation
 
-### Using pip (recommended)
 ```bash
 pip install autodialer
 ```
 
-### Using uv
-If you prefer `uv` for faster environment and dependency management:
-
-```bash
-# install from PyPI
-uv tool install autodialer
-
-# run directly
-autodialer
-```
-
-For local development:
-
-```bash
-uv sync
-uv pip install -e .
-uv run autodialer --help
-```
 
 ### From source (development)
 ```bash
@@ -54,9 +35,9 @@ Create a `.env` file in your working directory:
 | :--- | :--- |
 | `PANEL_USERNAME` | Router panel username (defaults to `admin`) |
 | `PANEL_PASSWORD` | Router panel password |
-| `PPPOE_USERNAME` | ISP PPPoE username (optional; used when you want to overwrite the router's saved PPPoE config before reconnecting) |
-| `PPPOE_PASSWORD` | ISP PPPoE password (optional; used when you want to overwrite the router's saved PPPoE config before reconnecting) |
-| `ASN` | Target ASN (optional unless not using `--force`) |
+| `PPPOE_USERNAME` | ISP PPPoE username override (optional) |
+| `PPPOE_PASSWORD` | ISP PPPoE password override (optional) |
+| `ASN` | Optional library-level default ASN. The CLI currently expects the ASN to be passed explicitly with `--asn <ASN>`. |
 
 Example:
 ```bash
@@ -72,10 +53,9 @@ ASN='AS9929'
 After installation, use the CLI directly:
 
 ```bash
-autodialer
 autodialer --force
 autodialer --asn AS9929
-autodialer-devices --tplink
+autodialer-devices
 ```
 
 Arguments:
@@ -83,11 +63,18 @@ Arguments:
 - `-a`, `--asn`: target ASN (for example `AS9929` or `9929`).
 
 Behavior:
+- `autodialer` currently requires either `--force` or `--asn <ASN>`.
 - AutoDialer detects current WAN protocol and applies matching reconnection action.
 - PPPoE uses disconnect/connect flow and reuses the router's saved credentials by default.
 - If `PPPOE_USERNAME` and `PPPOE_PASSWORD` are set, AutoDialer updates the router's PPPoE config before reconnecting.
 - DHCP uses DHCP renew flow and shares the same ASN/check/retry control logic.
-- ASUSWRT routers use panel authentication plus WAN restart through the ASUS web API.
+
+## Documentation
+
+- User and implementation docs: [`docs/README.md`](docs/README.md)
+- Setup and CLI details: [`docs/getting-started.md`](docs/getting-started.md)
+- Detection and reconnection flow: [`docs/how-it-works.md`](docs/how-it-works.md)
+- Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Notes
 - TP-Link and ASUS routers are supported by default.
