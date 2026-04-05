@@ -7,6 +7,7 @@ from urllib.parse import quote
 
 import requests
 
+from autodialer.apis.routers.base_api import RouterAPI
 from autodialer.apis.utils.get_gateway import format_ip_for_url_host, get_gateway_ip
 from autodialer.config.config import PANEL_PASSWORD, PANEL_USERNAME
 
@@ -23,7 +24,7 @@ MAC_ADDRESS_PATTERN = re.compile(r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 logger = logging.getLogger(__name__)
 
 
-class AsusAPI:
+class AsusAPI(RouterAPI):
     """Interact with ASUSWRT routers using the web API."""
 
     SUPPORTED_VENDORS = ("ASUS", "ASUS AiMesh")

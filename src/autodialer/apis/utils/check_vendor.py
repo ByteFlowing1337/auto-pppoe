@@ -1,7 +1,7 @@
 import logging
 
 import requests
-from .get_gateway import format_ip_for_url_host, get_gateway_ip
+from autodialer.apis.utils.get_gateway import format_ip_for_url_host, get_gateway_ip
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,6 @@ VENDOR_SIGNATURES: dict[str, tuple[str, ...]] = {
     "Xiaomi": ("xiaomi", "miwifi"),
     "Huawei": ("huawei", "e5770", "e5773", "e5776"),
     "Zyxel": ("zyxel", "zywall", "zyxel.com"),
-    "ZTE": ("zte", "zte.com.cn"),
     "TP-Link Omada": ("omada", "tp-link omada"),
     "MikroTik": ("mikrotik", "routeros"),
     "Ubiquiti": ("ubiquiti", "unifi"),
@@ -37,6 +36,7 @@ VENDOR_SIGNATURES: dict[str, tuple[str, ...]] = {
     "ASUS AiMesh": ("aimesh", "asus aimesh"),
     "Netgear Orbi": ("orbi", "netgear orbi"),
     "Linksys Velop": ("velop", "linksys velop"),
+    "ZTE": ("zte", "zte.com.cn", "中兴"),
     "Google Nest Wifi": ("nest wifi", "google nest wifi"),
     "Eero": ("eero", "eero.com"),
 }
@@ -53,13 +53,14 @@ def check_router_vendor() -> str | None:
         response = requests.get(f"http://{gateway_host}", timeout=5)
         response.raise_for_status()
 
-        body = (response.text or "")[:20000].casefold()
-        server = response.headers.get("Server", "").casefold()
-        location = response.headers.get("Location", "").casefold()
-        fingerprint = " ".join((body, server, location))
+        title = (
+            response.text.split("<title>")[1].split("</title>")[0].casefold()
+            if "<title>" in response.text
+            else ""
+        )
 
         for vendor, markers in VENDOR_SIGNATURES.items():
-            if any(marker in fingerprint for marker in markers):
+            if any(marker in title for marker in markers):
                 return vendor
 
         logger.error("Unknown router vendor.")
@@ -67,3 +68,11 @@ def check_router_vendor() -> str | None:
     except requests.RequestException as e:
         logger.error("Error connecting to router: %s", e)
         return None
+
+
+if __name__ == "__main__":
+    vendor = check_router_vendor()
+    if vendor:
+        print(f"Detected router vendor: {vendor}")
+    else:
+        print("Router vendor could not be determined.")
