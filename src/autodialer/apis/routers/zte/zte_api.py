@@ -331,10 +331,14 @@ class ZteApi(RouterAPI):
             if "json" in response.headers.get(
                 "Content-Type", ""
             ).lower() or body.startswith("{"):
-                data = response.json()
-                if isinstance(data, dict) and data.get("SUCC"):
-                    logger.info("DHCP renew successful.")
-                    return "success"
+                try:
+                    data = response.json()
+                    if isinstance(data, dict) and data.get("SUCC"):
+                        logger.info("DHCP renew successful.")
+                        return "success"
+                except ValueError:
+                    logger.error("Failed to parse JSON response.")
+                    return "failed"
 
                 logger.error("Restart failed: Unexpected JSON response.")
                 return "failed"
