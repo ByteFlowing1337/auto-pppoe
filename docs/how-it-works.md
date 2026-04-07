@@ -30,8 +30,9 @@ Vendor detection is implemented in `src/autodialer/apis/utils/check_vendor.py`.
 The current logic:
 
 - requests `http://<gateway>`,
-- inspects the first part of the response body plus the `Server` and `Location` headers,
-- compares those values against a set of known vendor markers, and
+- checks the HTML `<title>` when present,
+- falls back to redirect URLs and `Location` headers,
+- scans response headers and the HTML body for known vendor markers, and
 - returns the first matching vendor name.
 
 The registry lookup in `src/autodialer/apis/utils/get_vendor_api.py` then discovers router implementations dynamically by scanning `*_api.py` files and reading each class's `SUPPORTED_VENDORS`.
@@ -63,7 +64,7 @@ The TP-Link integration currently supports:
 
 Its payloads are JSON requests sent to the TP-Link web API after logging in and obtaining a `stok`.
 
-### ASUS / ASUS AiMesh
+### ASUS
 
 The ASUS integration currently supports:
 
@@ -81,7 +82,7 @@ The repository currently contains these router API modules:
 | :--- | :--- | :--- |
 | `asus/asus_api.py` | Implemented | Used for `ASUS` and `ASUS AiMesh` fingerprints. |
 | `tplink/tplink_api.py` | Implemented | Handles PPPoE, DHCP, and device listing. |
-| `zte/zte_api.py` | Partial scaffold | Vendor mapping exists, but the implementation is not feature-complete yet. |
+| `zte/zte_api.py` | Implemented | Handles PPPoE, DHCP, and device listing. |
 
 Support is best understood as "implemented against known request/response shapes," not as a guarantee for every firmware revision from a vendor.
 
