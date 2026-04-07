@@ -55,7 +55,7 @@ def check_router_vendor() -> str | None:
 
         title = (
             response.text.split("<title>")[1].split("</title>")[0].casefold()
-            if "<title>" in response.text
+            if "<title>" in response.text and "</title>" in response.text
             else ""
         )
 
