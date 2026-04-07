@@ -68,6 +68,11 @@ class ZteApi(RouterAPI):
             logger.error("Router did not return the expected login tokens.")
             return False
 
+        if PANEL_PASSWORD is None:
+            logger.error(
+                "ZTE router authentication failed: PANEL_PASSWORD is not configured."
+            )
+            return False
         self.password = zte_security_encode(PANEL_PASSWORD, self.logintoken)
         authenticated_session_token = self._login_router()
         if authenticated_session_token is None:
