@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 import requests
 
 from autodialer.apis.routers.base_api import RouterAPI
-from autodialer.apis.utils.get_gateway import get_gateway_ip
+from autodialer.apis.utils.get_gateway import get_gateway_ip, format_ip_for_url_host
 from autodialer.config.config import PANEL_PASSWORD, PANEL_USERNAME
 from autodialer.encode.zte_encode import zte_security_encode
 
@@ -28,8 +28,7 @@ class ZteApi(RouterAPI):
         if router_ip is None:
             logger.error("Could not determine router IP address.")
             exit(1)
-
-        self.router_ip = router_ip
+        self.router_host = format_ip_for_url_host(router_ip)
         self.session = requests.Session()
         self._seed_browser_cookies()
         if not self._authenticate():
@@ -39,7 +38,7 @@ class ZteApi(RouterAPI):
     def _seed_browser_cookies(self) -> None:
         self.session.headers.update(
             {
-                "User-Agent": self.BROWSER_USER_AGENT,
+                "User-Agent": ZteApi.BROWSER_USER_AGENT,
                 "Accept-Language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
             }
         )
@@ -47,13 +46,13 @@ class ZteApi(RouterAPI):
         self.session.cookies.set(
             "_TESTCOOKIESUPPORT",
             "1",
-            domain=self.router_ip,
+            domain=self.router_host,
             path="/",
         )
         self.session.cookies.set(
             "sidebarStatus",
             "0",
-            domain=self.router_ip,
+            domain=self.router_host,
             path="/",
         )
 
@@ -79,12 +78,12 @@ class ZteApi(RouterAPI):
 
     def _has_sid_cookie(self) -> bool:
         return bool(
-            self.session.cookies.get("SID", domain=self.router_ip, path="/")
+            self.session.cookies.get("SID", domain=self.router_host, path="/")
             or self.session.cookies.get("SID")
         )
 
     def _get_session_token(self) -> dict | None:
-        url = f"http://{self.router_ip}"
+        url = f"http://{self.router_host}"
         paramaters = {"_type": "loginsceneData", "_tag": "login_token_json"}
         try:
             response = self.session.get(url, params=paramaters, timeout=5)
@@ -102,7 +101,7 @@ class ZteApi(RouterAPI):
             return None
 
     def _login_router(self) -> str | None:
-        url = f"http://{self.router_ip}"
+        url = f"http://{self.router_host}"
         paramaters = {"_type": "loginData", "_tag": "login_entry"}
 
         payload = {
@@ -143,12 +142,12 @@ class ZteApi(RouterAPI):
             return None
 
     def _get_xsrf_token(self) -> str | None:
-        url = f"http://{self.router_ip}"
+        url = f"http://{self.router_host}"
         paramaters = {"_type": "hiddenData", "_tag": "vue_userif_data"}
         headers = {
             "Accept": "*/*",
-            "Origin": f"http://{self.router_ip}",
-            "Referer": f"http://{self.router_ip}/",
+            "Origin": f"http://{self.router_host}",
+            "Referer": f"http://{self.router_host}/",
         }
 
         try:
@@ -252,7 +251,7 @@ class ZteApi(RouterAPI):
         return bool(local_mac and mac and local_mac == mac)
 
     def get_wan_proto(self) -> str | None:
-        url = f"http://{self.router_ip}/?_type=vueData&_tag=home_internetreg_lua"
+        url = f"http://{self.router_host}/?_type=vueData&_tag=home_internetreg_lua"
         try:
             response = self.session.get(url, timeout=5)
             response.raise_for_status()
@@ -276,7 +275,7 @@ class ZteApi(RouterAPI):
             return None
 
     def _dhcp_renew_once(self) -> str:
-        url = f"http://{self.router_ip}"
+        url = f"http://{self.router_host}"
         paramaters = {"_type": "vueData", "_tag": "vue_derestart_data"}
         xsrf_token = self._get_xsrf_token()
         if xsrf_token is None:
@@ -288,8 +287,8 @@ class ZteApi(RouterAPI):
         }
         headers = {
             "Accept": "*/*",
-            "Origin": f"http://{self.router_ip}",
-            "Referer": f"http://{self.router_ip}/",
+            "Origin": f"http://{self.router_host}",
+            "Referer": f"http://{self.router_host}/",
         }
 
         try:
@@ -372,7 +371,7 @@ class ZteApi(RouterAPI):
         return self._dhcp_renew_once() == "success"
 
     def get_connected_devices(self) -> list[dict[str, Any]]:
-        url = f"http://{self.router_ip}"
+        url = f"http://{self.router_host}"
         paramaters = {"_type": "vueData", "_tag": "localnet_lan_info_lua"}
         try:
             response = self.session.get(url, params=paramaters, timeout=5)
