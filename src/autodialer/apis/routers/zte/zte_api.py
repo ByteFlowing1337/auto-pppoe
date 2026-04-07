@@ -279,7 +279,19 @@ class ZteApi(RouterAPI):
             logger.error(f"Failed to get WAN protocol: {e}")
             return None
 
-    def _dhcp_renew_once(self) -> str:
+    def make_pppoe_reconnection(self) -> bool:
+        first_attempt = self._restart_once()
+        if first_attempt == "success":
+            return True
+        if first_attempt != "expired":
+            return False
+
+        if not self._authenticate():
+            logger.error("Failed to refresh router session.")
+            return False
+        return self._restart_once() == "success"
+
+    def _restart_once(self) -> str:
         url = f"http://{self.router_host}"
         paramaters = {"_type": "vueData", "_tag": "vue_derestart_data"}
         xsrf_token = self._get_xsrf_token()
@@ -359,25 +371,23 @@ class ZteApi(RouterAPI):
                 )
                 return "failed"
 
-            logger.info("DHCP renew accepted with non-JSON response.")
             return "success"
         except requests.RequestException as e:
             logger.error(f"Failed to restart: {e}")
             return "failed"
 
     def dhcp_renew(self) -> bool:
-        first_attempt = self._dhcp_renew_once()
+        first_attempt = self._restart_once()
         if first_attempt == "success":
             return True
         if first_attempt != "expired":
             return False
 
-        logger.info("Refreshing ZTE session and retrying DHCP renew.")
         if not self._authenticate():
             logger.error("Failed to refresh router session.")
             return False
 
-        return self._dhcp_renew_once() == "success"
+        return self._restart_once() == "success"
 
     def get_connected_devices(self) -> list[dict[str, Any]]:
         url = f"http://{self.router_host}"
