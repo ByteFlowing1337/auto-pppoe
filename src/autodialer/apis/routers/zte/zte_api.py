@@ -21,8 +21,6 @@ class ZteApi(RouterAPI):
         "Chrome/146.0.0.0 Safari/537.36"
     )
 
-    router_ip: str
-
     def __init__(self):
         router_ip = get_gateway_ip()
         if router_ip is None:
