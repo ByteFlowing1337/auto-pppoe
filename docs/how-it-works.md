@@ -82,7 +82,7 @@ The repository currently contains these router API modules:
 | :--- | :--- | :--- |
 | `asus/asus_api.py` | Implemented | Used for `ASUS` and `ASUS AiMesh` fingerprints. |
 | `tplink/tplink_api.py` | Implemented | Handles PPPoE, DHCP, and device listing. |
-| `zte/zte_api.py` | Implemented | Handles PPPoe, DHCP and device listing. |
+| `zte/zte_api.py` | Implemented | Handles PPPoE, DHCP, and device listing. |
 
 Support is best understood as "implemented against known request/response shapes," not as a guarantee for every firmware revision from a vendor.
 
