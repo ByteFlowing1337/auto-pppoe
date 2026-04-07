@@ -1,10 +1,13 @@
 import logging
+import re
+from collections.abc import Iterator
 
 import requests
 from autodialer.apis.utils.get_gateway import format_ip_for_url_host, get_gateway_ip
 
 
 logger = logging.getLogger(__name__)
+TITLE_PATTERN = re.compile(r"<title\b[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
 
 VENDOR_SIGNATURES: dict[str, tuple[str, ...]] = {
     "TP-Link": ("tp-link", "tplink", "tl-", "archer", "deco", "tplinkwifi.net"),
@@ -42,6 +45,26 @@ VENDOR_SIGNATURES: dict[str, tuple[str, ...]] = {
 }
 
 
+def _match_vendor_marker(text: str) -> str | None:
+    normalized_text = text.casefold()
+
+    for vendor, markers in VENDOR_SIGNATURES.items():
+        if any(marker in normalized_text for marker in markers):
+            return vendor
+
+    return None
+
+
+def _extract_title(text: str) -> str:
+    match = TITLE_PATTERN.search(text)
+    return match.group(1) if match else ""
+
+
+def _iter_response_chain(response: requests.Response) -> Iterator[requests.Response]:
+    yield from getattr(response, "history", [])
+    yield response
+
+
 def check_router_vendor() -> str | None:
     gateway = get_gateway_ip()
     if gateway is None:
@@ -53,15 +76,36 @@ def check_router_vendor() -> str | None:
         response = requests.get(f"http://{gateway_host}", timeout=5)
         response.raise_for_status()
 
-        title = (
-            response.text.split("<title>")[1].split("</title>")[0].casefold()
-            if "<title>" in response.text and "</title>" in response.text
-            else ""
-        )
-
-        for vendor, markers in VENDOR_SIGNATURES.items():
-            if any(marker in title for marker in markers):
+        title = _extract_title(response.text)
+        if title:
+            vendor = _match_vendor_marker(title)
+            if vendor is not None:
                 return vendor
+
+        for candidate_response in _iter_response_chain(response):
+            if getattr(candidate_response, "url", ""):
+                vendor = _match_vendor_marker(candidate_response.url)
+                if vendor is not None:
+                    return vendor
+
+            headers = getattr(candidate_response, "headers", {}) or {}
+            location = headers.get("Location") or headers.get("location")
+            if location:
+                vendor = _match_vendor_marker(location)
+                if vendor is not None:
+                    return vendor
+
+            header_text = " ".join(
+                f"{name}: {value}" for name, value in headers.items()
+            )
+            if header_text:
+                vendor = _match_vendor_marker(header_text)
+                if vendor is not None:
+                    return vendor
+
+        vendor = _match_vendor_marker(response.text)
+        if vendor is not None:
+            return vendor
 
         logger.error("Unknown router vendor.")
         return None
