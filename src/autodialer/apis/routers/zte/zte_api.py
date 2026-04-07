@@ -13,7 +13,7 @@ from autodialer.encode.zte_encode import zte_security_encode
 logger = logging.getLogger(__name__)
 
 
-class ZteApi(RouterAPI):
+class ZTEApi(RouterAPI):
     SUPPORTED_VENDORS = ("ZTE",)
     BROWSER_USER_AGENT = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -36,7 +36,7 @@ class ZteApi(RouterAPI):
     def _seed_browser_cookies(self) -> None:
         self.session.headers.update(
             {
-                "User-Agent": ZteApi.BROWSER_USER_AGENT,
+                "User-Agent": ZTEApi.BROWSER_USER_AGENT,
                 "Accept-Language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
             }
         )
@@ -335,7 +335,6 @@ class ZteApi(RouterAPI):
                     "",
                     "0",
                 }:
-                    logger.info("DHCP renew successful.")
                     return "success"
 
                 logger.error(
@@ -349,7 +348,6 @@ class ZteApi(RouterAPI):
                 try:
                     data = response.json()
                     if isinstance(data, dict) and data.get("SUCC"):
-                        logger.info("DHCP renew successful.")
                         return "success"
                 except ValueError:
                     logger.error("Failed to parse JSON response.")
@@ -360,7 +358,6 @@ class ZteApi(RouterAPI):
 
             lowered_body = body.lower()
             if "succ" in lowered_body or "success" in lowered_body:
-                logger.info("DHCP renew successful.")
                 return "success"
 
             if "<html" in lowered_body or "<!doctype" in lowered_body:
