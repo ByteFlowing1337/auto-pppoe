@@ -1,0 +1,4 @@
+site_name: AutoDialer
+site_url: https://example.com/docs
+theme:
+  name: material
