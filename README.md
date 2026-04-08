@@ -1,5 +1,4 @@
-# AutoDialer
-
+# Welcome
 AutoDialer is a cross-platform Python CLI package for router APIs, designed to rotate public IP addresses automatically and streamline router interactions.
 
 ## Why AutoDialer?
@@ -13,19 +12,9 @@ AutoDialer is a cross-platform Python CLI package for router APIs, designed to r
 pip install autodialer
 ```
 
-
-### From source (development)
-```bash
-python -m venv .venv
-
-# Windows (PowerShell)
-. .\.venv\Scripts\Activate.ps1
-
-# Linux/macOS
-source .venv/bin/activate
-
-python -m pip install -e .
-```
+## Notes
+- **Only** TP-Link, ZTE and ASUS routers are supported now.
+- Keep `.env` private and never commit credentials.
 
 ## Configuration
 
@@ -71,13 +60,9 @@ Behavior:
 
 ## Documentation
 
-- Setup and CLI details: [`docs/getting-started.md`](docs/en/docs/getting-started.md)
-- Detection and reconnection flow: [`docs/how-it-works.md`](docs/en/docs/how-it-works.md)
+- Setup and CLI details: [`docs/getting-started.md`](getting-started.md)
+- Detection and reconnection flow: [`docs/how-it-works.md`](how-it-works.md)
 - Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md)
-
-## Notes
-- TP-Link, ZTE and ASUS routers are supported by default.
-- Keep `.env` private and never commit credentials.
 
 ---
 Thanks for using AutoDialer.
