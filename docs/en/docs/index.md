@@ -3,7 +3,7 @@ AutoDialer is a cross-platform Python CLI package for router APIs, designed to r
 
 ## Why AutoDialer?
 - Convenient IP rotation on dynamic lines without manual router reboot.
-- Cross-platform (Windows, Linux, macOS, BSD, etc.).
+- Cross-platform (Windows, Linux, macOS, BSD).
 - CLI-first usage for scripts and automation.
 
 ## Installation
