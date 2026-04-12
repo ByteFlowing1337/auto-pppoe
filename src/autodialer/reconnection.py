@@ -5,6 +5,7 @@ from autodialer.apis import check_isp_with_retries
 from autodialer.apis.utils.is_target_asn import is_target_asn
 from autodialer.config.config import ASN
 from autodialer.apis.utils.get_vendor_api import get_vendor_api
+from autodialer.apis.utils.get_ip_address import get_ip_address
 from sys import argv
 from pathlib import Path
 
@@ -28,7 +29,9 @@ class Reconnection:
         logger.error("Unsupported WAN protocol: %s", proto)
         return False
 
-    def run_reconnection(self, force: bool = False, asn: str | None = ASN) -> None:
+    def run_reconnection(
+        self, force: bool = False, asn: str | None = ASN, change: bool = False
+    ) -> None:
 
         proto = self._get_wan_proto()
 
@@ -43,6 +46,19 @@ class Reconnection:
             if isp is not None:
                 logger.info("ISP after forced reconnection: %s", isp)
             return
+
+        if change:
+            current_ip: str = get_ip_address()
+            after_reconnection_ip: str = current_ip
+            attemps = 0
+            while (current_ip == after_reconnection_ip) and attemps < 5:
+                if not self._apply_reconnection(proto):
+                    exit(1)
+                after_reconnection_ip = get_ip_address()
+                attemps += 1
+            if attemps == 5:
+                logger.error("Failed to change IP address after 5 attempts.")
+                exit(1)
 
         max_attempts = 5
         for _ in range(max_attempts):
@@ -66,6 +82,8 @@ class Reconnection:
                 self.run_reconnection(force=True)
             case "-a" | "--asn":
                 self.run_reconnection(force=False, asn=argv[2])
+            case "-c" | "--change":
+                self.run_reconnection(force=False, change=True)
 
 
 def parse_arguments(asn: str | None) -> None:
@@ -89,6 +107,8 @@ def parse_arguments(asn: str | None) -> None:
 
             if is_target_asn(isp, asn):
                 exit(0)
+            return
+        case "-c" | "--change":
             return
         case _:
             logger.error("Unknown argument: %s", argv[1])
